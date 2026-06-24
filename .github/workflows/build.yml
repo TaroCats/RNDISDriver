@@ -25,11 +25,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode
+      - name: Select Xcode & detect SDK
         run: |
           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           xcodebuild -version
-          xcodebuild -showsdks | grep -i driver || true
+          DRIVERKIT_SDK=$(xcodebuild -showsdks 2>/dev/null | grep -oE 'driverkit[0-9.]*' | head -1)
+          if [ -z "$DRIVERKIT_SDK" ]; then
+            echo "ERROR: No DriverKit SDK found"
+            exit 1
+          fi
+          echo "DRIVERKIT_SDK=$DRIVERKIT_SDK" >> $GITHUB_ENV
+          echo "Using SDK: $DRIVERKIT_SDK"
 
       - name: Build (${{ matrix.configuration }} / unsigned)
         run: |
@@ -37,7 +43,7 @@ jobs:
             -project RNDISDriver.xcodeproj \
             -scheme RNDISDriver \
             -configuration ${{ matrix.configuration }} \
-            -sdk driverkit25.5 \
+            -sdk "$DRIVERKIT_SDK" \
             -derivedDataPath build \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
@@ -46,10 +52,11 @@ jobs:
 
       - name: Verify dext binary
         run: |
+          PRODUCT_DIR="build/Build/Products/${{ matrix.configuration }}-${DRIVERKIT_SDK}"
           echo "=== dext binary info ==="
-          file build/Build/Products/${{ matrix.configuration }}-driverkit/RNDISDriver.dext/RNDISDriver
+          file "$PRODUCT_DIR/RNDISDriver.dext/RNDISDriver"
           echo "=== Info.plist ==="
-          plutil -p build/Build/Products/${{ matrix.configuration }}-driverkit/RNDISDriver.dext/Info.plist
+          plutil -p "$PRODUCT_DIR/RNDISDriver.dext/Info.plist"
 
   lint:
     name: Lint plist & entitlements
@@ -76,10 +83,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode
+      - name: Select Xcode & detect SDK
         run: |
           sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           xcodebuild -version
+          DRIVERKIT_SDK=$(xcodebuild -showsdks 2>/dev/null | grep -oE 'driverkit[0-9.]*' | head -1)
+          if [ -z "$DRIVERKIT_SDK" ]; then
+            echo "ERROR: No DriverKit SDK found"
+            exit 1
+          fi
+          echo "DRIVERKIT_SDK=$DRIVERKIT_SDK" >> $GITHUB_ENV
+          echo "Using SDK: $DRIVERKIT_SDK"
 
       - name: Import Developer Certificate
         uses: apple-actions/import-codesign-certs@v3
@@ -93,7 +107,7 @@ jobs:
             -project RNDISDriver.xcodeproj \
             -scheme RNDISDriver \
             -configuration Release \
-            -sdk driverkit25.5 \
+            -sdk "$DRIVERKIT_SDK" \
             -derivedDataPath build \
             CODE_SIGN_IDENTITY="Developer ID Application" \
             OTHER_CODE_SIGN_FLAGS="--timestamp" \
@@ -102,7 +116,7 @@ jobs:
       - name: Archive dext
         run: |
           mkdir -p artifacts
-          cp -R build/Build/Products/Release-driverkit/RNDISDriver.dext artifacts/
+          cp -R "build/Build/Products/Release-${DRIVERKIT_SDK}/RNDISDriver.dext" artifacts/
 
       - name: Notarize
         uses: apple-actions/notarize-macos-artifact@v1
