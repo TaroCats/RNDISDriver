@@ -71,6 +71,30 @@ jobs:
           echo "=== Info.plist ==="
           plutil -p "$PRODUCT_DIR/RNDISDriver.dext/Info.plist"
 
+      - name: Package unsigned dext (Release only)
+        if: matrix.configuration == 'Release'
+        run: |
+          PRODUCT_DIR=$(xcodebuild \
+            -project RNDISDriver.xcodeproj \
+            -scheme RNDISDriver \
+            -configuration Release \
+            -sdk "$DRIVERKIT_SDK" \
+            -derivedDataPath build \
+            -showBuildSettings 2>/dev/null \
+            | grep " BUILT_PRODUCTS_DIR = " \
+            | head -1 \
+            | sed 's/.*= //')
+          mkdir -p artifacts-unsigned
+          cp -R "$PRODUCT_DIR/RNDISDriver.dext" artifacts-unsigned/
+          ditto -c -k --keepParent artifacts-unsigned/RNDISDriver.dext artifacts-unsigned/RNDISDriver-unsigned.zip
+
+      - name: Upload unsigned artifact (Release only)
+        if: matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: RNDISDriver-unsigned
+          path: artifacts-unsigned/
+
   lint:
     name: Lint plist & entitlements
     runs-on: macos-26
