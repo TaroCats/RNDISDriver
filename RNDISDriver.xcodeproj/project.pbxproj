@@ -114,7 +114,7 @@
 				40207C97546F5F429082441B,
 				25436027270758D6BC508910,
 			); 
-			name = "RNDISDriver"; productName = "RNDISDriver"; productReference = CCBFF4ADF3025E4EABD6BF41 /* RNDISDriver.dext */; productType = "com.apple.product-type.driverkit-extension"; };
+			name = "RNDISDriver"; productName = "RNDISDriver"; productReference = CCBFF4ADF3025E4EABD6BF41 /* RNDISDriver.dext */; productType = "com.apple.product-type.driver-extension"; };
 
 		5E7E8941D5C75A829A695D6A /* RNDISApp */ = {isa = PBXNativeTarget; buildConfigurationList = 4C77F0664D2E5B0A8477D097 /* Build configuration list for PBXNativeTarget "RNDISApp" */; buildPhases = (
 				31451263C4455EB2ADB2CCBD,
@@ -187,6 +187,7 @@
 				"CODE_SIGN_ENTITLEMENTS" = "RNDISDriver.entitlements";
 				"CODE_SIGN_IDENTITY" = "-";
 				"CODE_SIGN_STYLE" = "Manual";
+				"CODE_SIGNING_ALLOWED" = NO;
 				"DEBUG_INFORMATION_FORMAT" = "dwarf";
 				"DRIVERKIT_DEPLOYMENT_TARGET" = "23.0";
 				"GCC_OPTIMIZATION_LEVEL" = "0";
@@ -196,8 +197,8 @@
 				"ONLY_ACTIVE_ARCH" = YES;
 				"PRODUCT_BUNDLE_IDENTIFIER" = "com.taro.rndisdriver";
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
-				"SDKROOT" = "macosx";
-				"SUPPORTED_PLATFORMS" = "macosx";
+				"SDKROOT" = "driverkit";
+				"SUPPORTED_PLATFORMS" = "driverkit";
 				"SYSTEM_DRIVERKIT_DEPLOYMENT_TARGET" = "23.0";
 			}; name = "Debug"; };
 
@@ -216,8 +217,8 @@
 				"ONLY_ACTIVE_ARCH" = NO;
 				"PRODUCT_BUNDLE_IDENTIFIER" = "com.taro.rndisdriver";
 				"PRODUCT_NAME" = "$(TARGET_NAME)";
-				"SDKROOT" = "macosx";
-				"SUPPORTED_PLATFORMS" = "macosx";
+				"SDKROOT" = "driverkit";
+				"SUPPORTED_PLATFORMS" = "driverkit";
 				"SYSTEM_DRIVERKIT_DEPLOYMENT_TARGET" = "23.0";
 			}; name = "Release"; };
 

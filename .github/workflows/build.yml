@@ -27,22 +27,17 @@ jobs:
 
       - name: Select Xcode
         run: |
-          XCODE_PATH=$(ls -d /Applications/Xcode*.app/Contents/Developer 2>/dev/null | tail -1)
-          if [ -z "$XCODE_PATH" ]; then
-            echo "Using default Xcode: $(xcode-select -p)"
-          else
-            echo "Found Xcode at: $XCODE_PATH"
-            sudo xcode-select -s "$XCODE_PATH"
-          fi
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           xcodebuild -version
+          xcodebuild -showsdks | grep -i driver || true
 
       - name: Build (${{ matrix.configuration }} / unsigned)
         run: |
           xcodebuild \
             -project RNDISDriver.xcodeproj \
-            -scheme RNDISApp \
+            -scheme RNDISDriver \
             -configuration ${{ matrix.configuration }} \
-            -sdk macosx \
+            -sdk driverkit25.5 \
             -derivedDataPath build \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
@@ -52,8 +47,9 @@ jobs:
       - name: Verify dext binary
         run: |
           echo "=== dext binary info ==="
-          file build/Build/Products/${{ matrix.configuration }}/RNDISDriver.dext/Contents/MacOS/RNDISDriver || true
-          ls -la build/Build/Products/${{ matrix.configuration }}/RNDISDriver.dext/Contents/ || true
+          file build/Build/Products/${{ matrix.configuration }}-driverkit/RNDISDriver.dext/RNDISDriver
+          echo "=== Info.plist ==="
+          plutil -p build/Build/Products/${{ matrix.configuration }}-driverkit/RNDISDriver.dext/Info.plist
 
   lint:
     name: Lint plist & entitlements
@@ -82,8 +78,7 @@ jobs:
 
       - name: Select Xcode
         run: |
-          XCODE_PATH=$(ls -d /Applications/Xcode*.app/Contents/Developer 2>/dev/null | tail -1)
-          [ -n "$XCODE_PATH" ] && sudo xcode-select -s "$XCODE_PATH"
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
           xcodebuild -version
 
       - name: Import Developer Certificate
@@ -96,9 +91,9 @@ jobs:
         run: |
           xcodebuild \
             -project RNDISDriver.xcodeproj \
-            -scheme RNDISApp \
+            -scheme RNDISDriver \
             -configuration Release \
-            -sdk macosx \
+            -sdk driverkit25.5 \
             -derivedDataPath build \
             CODE_SIGN_IDENTITY="Developer ID Application" \
             OTHER_CODE_SIGN_FLAGS="--timestamp" \
@@ -107,7 +102,7 @@ jobs:
       - name: Archive dext
         run: |
           mkdir -p artifacts
-          cp -R build/Build/Products/Release/RNDISDriver.dext artifacts/
+          cp -R build/Build/Products/Release-driverkit/RNDISDriver.dext artifacts/
 
       - name: Notarize
         uses: apple-actions/notarize-macos-artifact@v1

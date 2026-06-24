@@ -1,0 +1,4 @@
+build/
+DerivedData/
+*.o
+.DS_Store

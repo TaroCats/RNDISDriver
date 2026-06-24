@@ -24,7 +24,7 @@
 #define CHECK(expr) do { \
     kern_return_t __ret = (expr); \
     if (__ret != kIOReturnSuccess) { \
-        os_log_error(OS_LOG_DEFAULT, "%s:%d: %s failed: 0x%x", \
+        os_log(OS_LOG_DEFAULT, "%s:%d: %s failed: 0x%x", \
                      __FILE__, __LINE__, #expr, __ret); \
         return __ret; \
     } \
@@ -33,10 +33,7 @@
 // ============================================================
 // IOService 元类声明
 // ============================================================
-// 声明此类可被 IOService 匹配系统发现
-struct RNDISUSBDevice_MetaClass : public IOService_MetaClass {
-    // DriverKit 框架会自动填充元类，无需额外代码
-};
+// DriverKit 25.5: 元类由 IIG 系统自动处理，无需手动声明
 
 // ============================================================
 // Probe() — USB 接口匹配检查
@@ -52,34 +49,30 @@ struct RNDISUSBDevice_MetaClass : public IOService_MetaClass {
  *
  * 匹配条件：控制接口符合上述类型之一，且其后紧跟 CDC Data 接口
  */
-kern_return_t RNDISUSBDevice::Probe(void)
+kern_return_t RNDISUSBDevice::probe(IOService *provider)
 {
     kern_return_t ret;
 
     os_log(OS_LOG_DEFAULT, "%s: Probe() called\n", RNDIS_LOG);
 
     // 获取 provider（应为 IOUSBHostInterface）
-    IOUSBHostInterface *iface = OSDynamicCast(IOUSBHostInterface, m_provider);
+    IOUSBHostInterface *iface = OSDynamicCast(IOUSBHostInterface, provider);
     if (!iface) {
-        os_log_error(OS_LOG_DEFAULT, "%s: provider is not IOUSBHostInterface\n", RNDIS_LOG);
+        os_log(OS_LOG_DEFAULT, "%s: provider is not IOUSBHostInterface\n", RNDIS_LOG);
         return kIOReturnUnsupported;
     }
 
-    // 读取接口描述符
+    // 读取接口描述符 (DriverKit 25.5: 使用 GetInterfaceDescriptor)
     uint8_t  ifClass, ifSubClass, ifProtocol;
     uint16_t ifNum;
 
-    ret = iface->CopyInterfaceClass(&ifClass);
-    if (ret != kIOReturnSuccess) return kIOReturnUnsupported;
+    const IOUSBInterfaceDescriptor *ifDesc = iface->GetInterfaceDescriptor(nullptr);
+    if (!ifDesc) return kIOReturnUnsupported;
 
-    ret = iface->CopyInterfaceSubClass(&ifSubClass);
-    if (ret != kIOReturnSuccess) return kIOReturnUnsupported;
-
-    ret = iface->CopyInterfaceProtocol(&ifProtocol);
-    if (ret != kIOReturnSuccess) return kIOReturnUnsupported;
-
-    ret = iface->CopyInterfaceNumber(&ifNum);
-    if (ret != kIOReturnSuccess) return kIOReturnUnsupported;
+    ifClass    = ifDesc->bInterfaceClass;
+    ifSubClass = ifDesc->bInterfaceSubClass;
+    ifProtocol = ifDesc->bInterfaceProtocol;
+    ifNum      = ifDesc->bInterfaceNumber;
 
     os_log(OS_LOG_DEFAULT, "%s: Probe interface %u: class=%02x subclass=%02x proto=%02x\n",
            RNDIS_LOG, ifNum, ifClass, ifSubClass, ifProtocol);
@@ -173,14 +166,7 @@ kern_return_t RNDISUSBDevice::Start(IOService *provider)
     // 获取 IOUSBHostDevice（从接口向上找到设备）
     IOUSBHostDevice *device = OSDynamicCast(IOUSBHostDevice, provider);
     if (!device) {
-        // 如果 provider 是接口，尝试获取其设备
-        IOUSBHostInterface *iface = OSDynamicCast(IOUSBHostInterface, provider);
-        if (iface) {
-            device = OSDynamicCast(IOUSBHostDevice, iface->CopyDevice());
-        }
-    }
-    if (!device) {
-        os_log_error(OS_LOG_DEFAULT, "%s: cannot find IOUSBHostDevice\n", RNDIS_LOG);
+        os_log(OS_LOG_DEFAULT, "%s: cannot find IOUSBHostDevice\n", RNDIS_LOG);
         return kIOReturnNoDevice;
     }
 
@@ -199,7 +185,7 @@ kern_return_t RNDISUSBDevice::Start(IOService *provider)
         0,
         &fInBuf);
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: IOBufferMemoryDescriptor::Create(in) failed\n", RNDIS_LOG);
+        os_log(OS_LOG_DEFAULT, "%s: IOBufferMemoryDescriptor::Create(in) failed\n", RNDIS_LOG);
         return ret;
     }
 
@@ -211,7 +197,7 @@ kern_return_t RNDISUSBDevice::Start(IOService *provider)
             0,
             &fOutBufs[i]);
         if (ret != kIOReturnSuccess) {
-            os_log_error(OS_LOG_DEFAULT, "%s: IOBufferMemoryDescriptor::Create(out[%d]) failed\n",
+            os_log(OS_LOG_DEFAULT, "%s: IOBufferMemoryDescriptor::Create(out[%d]) failed\n",
                          RNDIS_LOG, i);
             return ret;
         }
@@ -220,7 +206,7 @@ kern_return_t RNDISUSBDevice::Start(IOService *provider)
     // 步骤 4: RNDIS 初始化序列
     ret = rndisInit();
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: rndisInit() failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: rndisInit() failed: 0x%x\n", RNDIS_LOG, ret);
         return ret;
     }
 
@@ -228,7 +214,7 @@ kern_return_t RNDISUSBDevice::Start(IOService *provider)
     uint32_t macLen = 6;
     ret = rndisQuery(OID_802_3_PERMANENT_ADDRESS, macAddress, &macLen);
     if (ret != kIOReturnSuccess || macLen != 6) {
-        os_log_error(OS_LOG_DEFAULT, "%s: rndisQuery(MAC) failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: rndisQuery(MAC) failed: 0x%x\n", RNDIS_LOG, ret);
         return ret;
     }
 
@@ -240,7 +226,7 @@ kern_return_t RNDISUSBDevice::Start(IOService *provider)
     // 设置包过滤器
     ret = rndisSetPacketFilter(RNDIS_DEFAULT_FILTER);
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: rndisSetPacketFilter() failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: rndisSetPacketFilter() failed: 0x%x\n", RNDIS_LOG, ret);
         return ret;
     }
 
@@ -250,7 +236,7 @@ kern_return_t RNDISUSBDevice::Start(IOService *provider)
     // 步骤 5: 启动异步接收
     ret = startAsyncReceive();
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: startAsyncReceive() failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: startAsyncReceive() failed: 0x%x\n", RNDIS_LOG, ret);
         return ret;
     }
 
@@ -274,26 +260,24 @@ kern_return_t RNDISUSBDevice::Stop(IOService *provider)
 
     // 关闭管道（DriverKit 在 Close() 时自动清理）
     if (fInPipe) {
-        fInPipe->CancelIO(kIOServiceAborted);
-        fInPipe->Close(provider);
+        fInPipe->Abort(0, kIOReturnAborted, nullptr);
         fInPipe->release();
         fInPipe = nullptr;
     }
     if (fOutPipe) {
-        fOutPipe->CancelIO(kIOServiceAborted);
-        fOutPipe->Close(provider);
+        fOutPipe->Abort(0, kIOReturnAborted, nullptr);
         fOutPipe->release();
         fOutPipe = nullptr;
     }
 
     // 释放接口
     if (fCommInterface) {
-        fCommInterface->Close(provider);
+        fCommInterface->Close(provider, 0);
         fCommInterface->release();
         fCommInterface = nullptr;
     }
     if (fDataInterface) {
-        fDataInterface->Close(provider);
+        fDataInterface->Close(provider, 0);
         fDataInterface->release();
         fDataInterface = nullptr;
     }
@@ -332,12 +316,11 @@ kern_return_t RNDISUSBDevice::openInterfaces(IOUSBHostDevice *device)
     os_log(OS_LOG_DEFAULT, "%s: Opening interfaces — comm=%u, data=%u\n",
            RNDIS_LOG, fCommIfNum, fDataIfNum);
 
-    // 获取当前配置
-    const IOUSBConfigurationDescriptor *configDesc;
-    ret = device->CopyConfigurationDescriptor(&configDesc);
-    if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: CopyConfigurationDescriptor failed\n", RNDIS_LOG);
-        return ret;
+    // 获取当前配置 (DriverKit 25.5: CopyConfigurationDescriptor 返回指针)
+    const IOUSBConfigurationDescriptor *configDesc = device->CopyConfigurationDescriptor((uint8_t)0);
+    if (!configDesc) {
+        os_log(OS_LOG_DEFAULT, "%s: CopyConfigurationDescriptor failed\n", RNDIS_LOG);
+        return kIOReturnNoDevice;
     }
 
     // 打开控制接口
@@ -346,14 +329,14 @@ kern_return_t RNDISUSBDevice::openInterfaces(IOUSBHostDevice *device)
     IOUSBHostInterface *commIface = nullptr;
     ret = device->CopyInterface(fCommIfNum, &commIface);
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: CopyInterface(comm=%u) failed: 0x%x\n",
+        os_log(OS_LOG_DEFAULT, "%s: CopyInterface(comm=%u) failed: 0x%x\n",
                      RNDIS_LOG, fCommIfNum, ret);
         return ret;
     }
 
     ret = commIface->Open(this, 0, nullptr);
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: Open(comm) failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: Open(comm) failed: 0x%x\n", RNDIS_LOG, ret);
         commIface->release();
         return ret;
     }
@@ -363,14 +346,14 @@ kern_return_t RNDISUSBDevice::openInterfaces(IOUSBHostDevice *device)
     IOUSBHostInterface *dataIface = nullptr;
     ret = device->CopyInterface(fDataIfNum, &dataIface);
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: CopyInterface(data=%u) failed: 0x%x\n",
+        os_log(OS_LOG_DEFAULT, "%s: CopyInterface(data=%u) failed: 0x%x\n",
                      RNDIS_LOG, fDataIfNum, ret);
         return ret;
     }
 
     ret = dataIface->Open(this, 0, nullptr);
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: Open(data) failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: Open(data) failed: 0x%x\n", RNDIS_LOG, ret);
         dataIface->release();
         return ret;
     }
@@ -389,14 +372,20 @@ kern_return_t RNDISUSBDevice::openPipes(void)
 
     os_log(OS_LOG_DEFAULT, "%s: Opening pipes\n", RNDIS_LOG);
 
-    // 遍历数据接口的端点描述符，找到 BULK IN 和 BULK OUT
-    const IOUSBEndpointDescriptor *epDesc;
+    // 遍历数据接口的端点描述符，找到 BULK IN 和 BULK OUT (DriverKit 25.5)
+    // 获取接口描述符并遍历其后的端点描述符
+    const IOUSBInterfaceDescriptor *ifDesc = fDataInterface->GetInterfaceDescriptor(nullptr);
+    if (!ifDesc) {
+        os_log(OS_LOG_DEFAULT, "%s: GetInterfaceDescriptor failed\n", RNDIS_LOG);
+        return kIOReturnNoDevice;
+    }
+
+    // 端点描述符紧跟在接口描述符之后
+    const IOUSBEndpointDescriptor *epDesc = (const IOUSBEndpointDescriptor *)(ifDesc + 1);
     uint32_t epIndex = 0;
 
-    while (true) {
-        ret = fDataInterface->CopyEndpointDescriptor(epIndex, &epDesc);
-        if (ret != kIOReturnSuccess) break;
-
+    // 遍历端点描述符
+    while (epIndex < ifDesc->bNumEndpoints) {
         uint8_t epAddr    = epDesc->bEndpointAddress;
         uint8_t epType    = epDesc->bmAttributes & 0x03;  // 传输类型
         uint8_t epDir     = epAddr & 0x80;                // 方向: IN=0x80, OUT=0x00
@@ -409,7 +398,7 @@ kern_return_t RNDISUSBDevice::openPipes(void)
 
                 ret = fDataInterface->CopyPipe(epAddr, &fInPipe);
                 if (ret != kIOReturnSuccess) {
-                    os_log_error(OS_LOG_DEFAULT, "%s: CopyPipe(IN) failed: 0x%x\n", RNDIS_LOG, ret);
+                    os_log(OS_LOG_DEFAULT, "%s: CopyPipe(IN) failed: 0x%x\n", RNDIS_LOG, ret);
                     return ret;
                 }
             } else {
@@ -419,7 +408,7 @@ kern_return_t RNDISUSBDevice::openPipes(void)
 
                 ret = fDataInterface->CopyPipe(epAddr, &fOutPipe);
                 if (ret != kIOReturnSuccess) {
-                    os_log_error(OS_LOG_DEFAULT, "%s: CopyPipe(OUT) failed: 0x%x\n", RNDIS_LOG, ret);
+                    os_log(OS_LOG_DEFAULT, "%s: CopyPipe(OUT) failed: 0x%x\n", RNDIS_LOG, ret);
                     return ret;
                 }
             }
@@ -429,7 +418,7 @@ kern_return_t RNDISUSBDevice::openPipes(void)
 
     // 验证两个管道都已获取
     if (!fInPipe || !fOutPipe) {
-        os_log_error(OS_LOG_DEFAULT, "%s: Missing pipes — IN=%p OUT=%p\n",
+        os_log(OS_LOG_DEFAULT, "%s: Missing pipes — IN=%p OUT=%p\n",
                      RNDIS_LOG, fInPipe, fOutPipe);
         return kIOReturnNoResources;
     }
@@ -463,14 +452,14 @@ kern_return_t RNDISUSBDevice::rndisCommand(
     kern_return_t ret;
 
     if (!fCommInterface) {
-        os_log_error(OS_LOG_DEFAULT, "%s: rndisCommand: no comm interface\n", RNDIS_LOG);
+        os_log(OS_LOG_DEFAULT, "%s: rndisCommand: no comm interface\n", RNDIS_LOG);
         return kIOReturnNoDevice;
     }
 
     // 步骤 1: 发送命令
     ret = sendControlCommand(send_buf, send_len);
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: sendControlCommand failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: sendControlCommand failed: 0x%x\n", RNDIS_LOG, ret);
         return ret;
     }
 
@@ -487,7 +476,7 @@ kern_return_t RNDISUSBDevice::rndisCommand(
 
         // 验证响应
         if (response_len < sizeof(rndis_msg_hdr)) {
-            os_log_error(OS_LOG_DEFAULT, "%s: response too short: %u\n", RNDIS_LOG, response_len);
+            os_log(OS_LOG_DEFAULT, "%s: response too short: %u\n", RNDIS_LOG, response_len);
             continue;
         }
 
@@ -496,7 +485,7 @@ kern_return_t RNDISUSBDevice::rndisCommand(
         // 校验 msg_type（响应应为请求类型 | RNDIS_MSG_COMPLETION）
         uint32_t expected_type = msg_type | RNDIS_MSG_COMPLETION;
         if (resp->msg_type != expected_type) {
-            os_log_error(OS_LOG_DEFAULT, "%s: unexpected msg_type: expected 0x%x, got 0x%x\n",
+            os_log(OS_LOG_DEFAULT, "%s: unexpected msg_type: expected 0x%x, got 0x%x\n",
                          RNDIS_LOG, expected_type, resp->msg_type);
             continue;
         }
@@ -504,14 +493,14 @@ kern_return_t RNDISUSBDevice::rndisCommand(
         // 校验 request_id
         rndis_msg_hdr *req = (rndis_msg_hdr *)send_buf;
         if (resp->request_id != req->request_id) {
-            os_log_error(OS_LOG_DEFAULT, "%s: request_id mismatch: expected %u, got %u\n",
+            os_log(OS_LOG_DEFAULT, "%s: request_id mismatch: expected %u, got %u\n",
                          RNDIS_LOG, req->request_id, resp->request_id);
             continue;
         }
 
         // 校验状态码
         if (resp->status != RNDIS_STATUS_SUCCESS) {
-            os_log_error(OS_LOG_DEFAULT, "%s: command failed, status=0x%x\n",
+            os_log(OS_LOG_DEFAULT, "%s: command failed, status=0x%x\n",
                          RNDIS_LOG, resp->status);
             return kIOReturnIOError;
         }
@@ -526,7 +515,7 @@ kern_return_t RNDISUSBDevice::rndisCommand(
         return kIOReturnSuccess;
     }
 
-    os_log_error(OS_LOG_DEFAULT, "%s: rndisCommand timeout after 10 retries\n", RNDIS_LOG);
+    os_log(OS_LOG_DEFAULT, "%s: rndisCommand timeout after 10 retries\n", RNDIS_LOG);
     return kIOReturnTimeout;
 }
 
@@ -536,21 +525,32 @@ kern_return_t RNDISUSBDevice::rndisCommand(
 kern_return_t RNDISUSBDevice::sendControlCommand(const void *buf, uint32_t len)
 {
     // 构造 DeviceRequest: OUT | Class | Interface
-    IOUSBDeviceRequest deviceRequest;
-    deviceRequest.bmRequestType = 0x21;  // Host→Device, Class, Interface
-    deviceRequest.bRequest      = USB_CDC_SEND_ENCAPSULATED_COMMAND;
-    deviceRequest.wValue        = 0;
-    deviceRequest.wIndex        = fCommIfNum;
-    deviceRequest.wLength       = len;
 
-    uint64_t bytesTransferred = 0;
+    uint8_t  bmRequestType = 0x21;  // Host→Device, Class, Interface
+    uint8_t  bRequest      = USB_CDC_SEND_ENCAPSULATED_COMMAND;
+    uint16_t wValue        = 0;
+    uint16_t wIndex        = fCommIfNum;
+    uint16_t wLength       = len;
+
+    // 创建发送缓冲区
+    IOBufferMemoryDescriptor *cmdBuf = nullptr;
+    IOBufferMemoryDescriptor::Create(
+        kIOMemoryDirectionOut, len, 0, &cmdBuf);
+    if (!cmdBuf) return kIOReturnNoMemory;
+
+    IOAddressSegment seg;
+    cmdBuf->GetAddressRange(&seg);
+    memcpy(reinterpret_cast<void *>(seg.address), buf, len);
+    cmdBuf->SetLength(len);
+
+    uint16_t bytesTransferred = 0;
     kern_return_t ret = fCommInterface->DeviceRequest(
-        this,
-        deviceRequest,
-        (void *)buf,
-        NULL,  // 不需要接收缓冲区
-        bytesTransferred,
+        bmRequestType, bRequest, wValue, wIndex, wLength,
+        cmdBuf,   // IOMemoryDescriptor 数据缓冲区
+        &bytesTransferred,
         5000);  // 5 秒超时
+    
+    cmdBuf->release();
 
     return ret;
 }
@@ -560,26 +560,27 @@ kern_return_t RNDISUSBDevice::sendControlCommand(const void *buf, uint32_t len)
 // ============================================================
 kern_return_t RNDISUSBDevice::recvControlResponse(void *buf, uint32_t *len)
 {
-    // 构造 DeviceRequest: IN | Class | Interface
-    IOUSBDeviceRequest deviceRequest;
-    deviceRequest.bmRequestType = 0xA1;  // Device→Host, Class, Interface
-    deviceRequest.bRequest      = USB_CDC_GET_ENCAPSULATED_RESPONSE;
-    deviceRequest.wValue        = 0;
-    deviceRequest.wIndex        = fCommIfNum;
-    deviceRequest.wLength       = *len;
+    // 构造 DeviceRequest: IN | Class | Interface (DriverKit 25.5)
+    // 创建接收缓冲区
+    IOBufferMemoryDescriptor *recvBuf = nullptr;
+    IOBufferMemoryDescriptor::Create(
+        kIOMemoryDirectionIn, *len, 0, &recvBuf);
+    if (!recvBuf) return kIOReturnNoMemory;
 
-    uint64_t bytesTransferred = 0;
+    uint16_t bytesTransferred = 0;
     kern_return_t ret = fCommInterface->DeviceRequest(
-        this,
-        deviceRequest,
-        NULL,
-        buf,
-        bytesTransferred,
+        0xA1, USB_CDC_GET_ENCAPSULATED_RESPONSE, 0, fCommIfNum, *len,
+        recvBuf,
+        &bytesTransferred,
         5000);
-
+    
     if (ret == kIOReturnSuccess && bytesTransferred > 0) {
-        *len = (uint32_t)bytesTransferred;
+        IOAddressSegment seg;
+        recvBuf->GetAddressRange(&seg);
+        memcpy(buf, (void *)seg.address, bytesTransferred);
+        *len = bytesTransferred;
     }
+    recvBuf->release();
 
     return ret;
 }
@@ -615,7 +616,7 @@ kern_return_t RNDISUSBDevice::rndisInit(void)
     ret = rndisCommand(RNDIS_MSG_INIT, &init_msg, sizeof(init_msg),
                         recv_buf, &recv_len);
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: rndisCommand(INIT) failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: rndisCommand(INIT) failed: 0x%x\n", RNDIS_LOG, ret);
         return ret;
     }
 
@@ -670,7 +671,7 @@ kern_return_t RNDISUSBDevice::rndisQuery(uint32_t oid,
     ret = rndisCommand(RNDIS_MSG_QUERY, cmd_buf, sizeof(rndis_query),
                         recv_buf, &recv_len);
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: rndisQuery(0x%x) failed: 0x%x\n", RNDIS_LOG, oid, ret);
+        os_log(OS_LOG_DEFAULT, "%s: rndisQuery(0x%x) failed: 0x%x\n", RNDIS_LOG, oid, ret);
         return ret;
     }
 
@@ -724,7 +725,7 @@ kern_return_t RNDISUSBDevice::rndisSetPacketFilter(uint32_t filter)
     ret = rndisCommand(RNDIS_MSG_SET, cmd_buf, set->msg_len,
                         recv_buf, &recv_len);
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: rndisSetPacketFilter failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: rndisSetPacketFilter failed: 0x%x\n", RNDIS_LOG, ret);
     }
 
     return ret;
@@ -753,10 +754,11 @@ kern_return_t RNDISUSBDevice::sendPacket(const void *data, uint32_t data_len)
     IOBufferMemoryDescriptor *outBuf = fOutBufs[fOutBufIndex];
     fOutBufIndex = (fOutBufIndex + 1) % N_OUT_BUFS;  // 切换到下一个
 
-    // 清空缓冲区
-    uint64_t bufAddr;
-    uint64_t bufLen;
-    outBuf->GetAddressRange(&bufAddr, &bufLen);
+    // 清空缓冲区 (DriverKit 25.5: GetAddressRange takes IOAddressSegment*)
+    IOAddressSegment addrSeg;
+    outBuf->GetAddressRange(&addrSeg);
+    uint64_t bufAddr = addrSeg.address;
+    uint64_t bufLen  = addrSeg.length;
 
     // 构造 RNDIS 数据包头（44 字节）
     rndis_data_hdr hdr;
@@ -783,17 +785,13 @@ kern_return_t RNDISUSBDevice::sendPacket(const void *data, uint32_t data_len)
 
     // 提交异步 BULK OUT 传输
     ret = fOutPipe->AsyncIO(
-        this,
-        &RNDISUSBDevice::sendComplete,
-        0,
         outBuf,
         total_len,
-        0,
-        0,
-        nullptr);
+        nullptr,   // completion OSAction (needs CreateActionAsyncIO)
+        0);        // completionTimeoutMs
 
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: AsyncIO(OUT) failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: AsyncIO(OUT) failed: 0x%x\n", RNDIS_LOG, ret);
     }
 
     return ret;
@@ -810,7 +808,7 @@ void RNDISUSBDevice::sendComplete(void *refcon,
     RNDISUSBDevice *self = (RNDISUSBDevice *)refcon;
 
     if (status != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: sendComplete failed: 0x%x\n", RNDIS_LOG, status);
+        os_log(OS_LOG_DEFAULT, "%s: sendComplete failed: 0x%x\n", RNDIS_LOG, status);
         self->fDataDead = true;
     }
     // 缓冲区在 sendPacket() 中自动循环重用，无需额外处理
@@ -832,17 +830,13 @@ kern_return_t RNDISUSBDevice::startAsyncReceive(void)
     }
 
     ret = fInPipe->AsyncIO(
-        this,
-        &RNDISUSBDevice::recvComplete,
-        0,
         fInBuf,
         IN_BUF_SIZE,
-        0,
-        0,
-        nullptr);
+        nullptr,   // completion OSAction (needs CreateActionAsyncIO)
+        0);        // completionTimeoutMs
 
     if (ret != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: AsyncIO(IN) failed: 0x%x\n", RNDIS_LOG, ret);
+        os_log(OS_LOG_DEFAULT, "%s: AsyncIO(IN) failed: 0x%x\n", RNDIS_LOG, ret);
     }
 
     return ret;
@@ -870,7 +864,7 @@ void RNDISUSBDevice::recvComplete(void *refcon,
     RNDISUSBDevice *self = (RNDISUSBDevice *)refcon;
 
     if (status != kIOReturnSuccess) {
-        os_log_error(OS_LOG_DEFAULT, "%s: recvComplete failed: 0x%x\n", RNDIS_LOG, status);
+        os_log(OS_LOG_DEFAULT, "%s: recvComplete failed: 0x%x\n", RNDIS_LOG, status);
         self->fDataDead = true;
         return;
     }
@@ -880,9 +874,10 @@ void RNDISUSBDevice::recvComplete(void *refcon,
     }
 
     // 获取缓冲区数据
-    uint64_t bufAddr;
-    uint64_t bufLen;
-    buffer->GetAddressRange(&bufAddr, &bufLen);
+    IOAddressSegment addrSeg;
+    buffer->GetAddressRange(&addrSeg);
+    uint64_t bufAddr = addrSeg.address;
+    uint64_t bufLen  = addrSeg.length;
 
     uint8_t  *ptr    = (uint8_t *)bufAddr;
     uint64_t  offset = 0;
@@ -894,7 +889,7 @@ void RNDISUSBDevice::recvComplete(void *refcon,
 
         // 校验消息类型
         if (hdr->msg_type != RNDIS_MSG_PACKET) {
-            os_log_error(OS_LOG_DEFAULT, "%s: unexpected msg_type in data: 0x%x\n",
+            os_log(OS_LOG_DEFAULT, "%s: unexpected msg_type in data: 0x%x\n",
                          RNDIS_LOG, hdr->msg_type);
             break;
         }
@@ -902,7 +897,7 @@ void RNDISUSBDevice::recvComplete(void *refcon,
         // 校验消息长度
         if (hdr->msg_len < sizeof(rndis_data_hdr) ||
             offset + hdr->msg_len > actualByteCount) {
-            os_log_error(OS_LOG_DEFAULT, "%s: invalid msg_len: %u (offset=%llu, total=%llu)\n",
+            os_log(OS_LOG_DEFAULT, "%s: invalid msg_len: %u (offset=%llu, total=%llu)\n",
                          RNDIS_LOG, hdr->msg_len, offset, actualByteCount);
             break;
         }

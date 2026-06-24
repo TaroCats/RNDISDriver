@@ -13,6 +13,8 @@
 #ifndef RNDISUSBDevice_h
 #define RNDISUSBDevice_h
 
+#define DRIVERKIT_FIX_OSTYPEID 1
+
 #include <DriverKit/DriverKit.h>
 #include <DriverKit/IOLib.h>
 #include <DriverKit/IOBufferMemoryDescriptor.h>
@@ -65,13 +67,11 @@ class RNDISEthernetController;
  */
 class RNDISUSBDevice : public IOService
 {
-    OSDeclareDefaultStructors(RNDISUSBDevice);
-
 public:
     // ========== IOService 生命周期 ==========
     virtual bool init(void) override;
-    virtual kern_return_t Start(IOService *provider) override;
-    virtual kern_return_t Stop(IOService *provider) override;
+    virtual kern_return_t Start(IOService *provider);
+    virtual kern_return_t Stop(IOService *provider);
     virtual void free(void) override;
 
     // ========== Probe 匹配逻辑 ==========
@@ -82,7 +82,7 @@ public:
      *   2. Misc RNDIS over Ethernet: Class=239(EFh)/Sub=4/Proto=1
      *   3. Linux Gadget: Class=2(CDC)/Sub=2(ACM)/Proto=255(Vendor)
      */
-    virtual kern_return_t Probe(void) override;
+    kern_return_t probe(IOService *provider);
 
     // ========== RNDIS 控制通道 ==========
     /*
