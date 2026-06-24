@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- ============================================================ -->
+	<!-- DriverKit 核心授权                                            -->
+	<!-- ============================================================ -->
+	<!-- 允许 dext 作为 DriverKit 驱动运行 -->
+	<key>com.apple.developer.driverkit</key>
+	<true/>
+
+	<!-- ============================================================ -->
+	<!-- USB 传输授权                                                   -->
+	<!-- ============================================================ -->
+	<!-- 允许 dext 访问 USB 设备（必需用于 RNDIS USB 通信） -->
+	<key>com.apple.developer.driverkit.transport.usb</key>
+	<true/>
+
+	<!-- ============================================================ -->
+	<!-- 用户空间客户端访问授权                                          -->
+	<!-- ============================================================ -->
+	<!-- 允许宿主 App 与 dext 通过 IOUserClient 通信 -->
+	<key>com.apple.developer.driverkit.userclient-access</key>
+	<true/>
+
+	<!-- ============================================================ -->
+	<!-- 网络扩展授权（可选，用于未来扩展）                               -->
+	<!-- ============================================================ -->
+	<key>com.apple.developer.driverkit.transport.networking</key>
+	<true/>
+</dict>
+</plist>

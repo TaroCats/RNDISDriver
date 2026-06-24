@@ -1,0 +1,111 @@
+name: Build RNDISDriver
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      enable_release:
+        description: 'Enable release job (requires secrets)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build:
+    name: Build dext
+    runs-on: macos-14
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+
+      - name: Build (${{ matrix.configuration }} / unsigned)
+        run: |
+          xcodebuild \
+            -project RNDISDriver.xcodeproj \
+            -scheme RNDISDriver \
+            -configuration ${{ matrix.configuration }} \
+            -sdk macosx \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Verify dext binary
+        run: |
+          echo "=== dext binary info ==="
+          file build/${{ matrix.configuration }}/RNDISDriver.dext/Contents/MacOS/RNDISDriver || true
+          ls -la build/${{ matrix.configuration }}/RNDISDriver.dext/Contents/ || true
+
+  lint:
+    name: Lint plist & entitlements
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Info.plist
+        run: plutil -lint RNDISDriver/Info.plist
+
+      - name: Validate App Info.plist
+        run: plutil -lint RNDISApp/Info.plist
+
+      - name: Validate entitlements
+        run: plutil -lint RNDISDriver.entitlements
+
+  release:
+    name: Release (signed + notarized)
+    runs-on: macos-14
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.enable_release == 'true'
+    environment: release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.app/Contents/Developer
+
+      - name: Import Developer Certificate
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE }}
+          p12-password: ${{ secrets.APPLE_DEVELOPER_CERTIFICATE_PASSWORD }}
+
+      - name: Build (Release / signed)
+        run: |
+          xcodebuild \
+            -project RNDISDriver.xcodeproj \
+            -scheme RNDISDriver \
+            -configuration Release \
+            -sdk macosx \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            OTHER_CODE_SIGN_FLAGS="--timestamp" \
+            build
+
+      - name: Archive dext
+        run: |
+          mkdir -p artifacts
+          cp -R build/Release/RNDISDriver.dext artifacts/
+
+      - name: Notarize
+        uses: apple-actions/notarize-macos-artifact@v1
+        with:
+          product-path: artifacts/RNDISDriver.dext
+          apple-id: ${{ secrets.APPLE_NOTARIZATION_USERNAME }}
+          apple-password: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
+          team-id: ${{ secrets.APPLE_NOTARIZATION_TEAM_ID }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RNDISDriver-signed
+          path: artifacts/

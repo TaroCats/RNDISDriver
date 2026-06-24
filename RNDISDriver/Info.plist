@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.yourcompany.RNDISDriver</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>RNDISDriver</string>
+	<key>CFBundlePackageType</key>
+	<string>DEXT</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+
+	<!-- ============================================================ -->
+	<!-- IOKitPersonalities — USB 设备匹配规则                        -->
+	<!--                                                              -->
+	<!-- 定义 4 个匹配规则，覆盖不同厂商的 RNDIS 设备：                -->
+	<!--   1. RNDISControlStockAndroid — 标准 Android 手机            -->
+	<!--   2. RNDISControlMiscDeviceRoE — Misc RNDIS over Ethernet   -->
+	<!--   3. RNDISControlLinuxGadget — 嵌入式 Linux 设备            -->
+	<!--   4. WirelessControllerDevice — 整设备级匹配               -->
+	<!--                                                              -->
+	<!-- 注意：dext 格式的 IOKitPersonalities 中，CFBundleIdentifier  -->
+	<!-- 指向本 dext 的 bundle ID，IOProviderClass 保持与 kext 一致。 -->
+	<!-- ============================================================ -->
+	<key>IOKitPersonalities</key>
+	<dict>
+		<!-- -------------------------------------------------------- -->
+		<!-- Personality 1: 标准 Android CDC RNDIS                    -->
+		<!-- 匹配条件：                                                -->
+		<!--   - 设备接口 Class=224(E0h): Wireless Controller         -->
+		<!--   - 子类 SubClass=1: Radio Frequency                     -->
+		<!--   - 协议 Protocol=3: RNDIS over Ethernet                 -->
+		<!-- 设备示例：Google Pixel, Samsung Galaxy (大部分), 小米等   -->
+		<!-- -------------------------------------------------------- -->
+		<key>RNDISControlStockAndroid</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.yourcompany.RNDISDriver</string>
+			<key>IOClass</key>
+			<string>RNDISUSBDevice</string>
+			<key>IOProviderClass</key>
+			<string>IOUSBHostInterface</string>
+			<key>IOUserClass</key>
+			<string>RNDISUSBDevice</string>
+			<key>bInterfaceClass</key>
+			<integer>224</integer>
+			<key>bInterfaceSubClass</key>
+			<integer>1</integer>
+			<key>bInterfaceProtocol</key>
+			<integer>3</integer>
+			<key>idVendor</key>
+			<string>*</string>
+			<key>idProduct</key>
+			<string>*</string>
+		</dict>
+
+		<!-- -------------------------------------------------------- -->
+		<!-- Personality 2: Misc RNDIS over Ethernet                  -->
+		<!-- 匹配条件：                                                -->
+		<!--   - 设备接口 Class=239(EFh): Miscellaneous Device        -->
+		<!--   - 子类 SubClass=4: RNDIS?                              -->
+		<!--   - 协议 Protocol=1: RNDIS over Ethernet                 -->
+		<!-- 设备示例：Nokia 7 Plus, Sony Xperia XZ, 部分 Samsung     -->
+		<!-- -------------------------------------------------------- -->
+		<key>RNDISControlMiscDeviceRoE</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.yourcompany.RNDISDriver</string>
+			<key>IOClass</key>
+			<string>RNDISUSBDevice</string>
+			<key>IOProviderClass</key>
+			<string>IOUSBHostInterface</string>
+			<key>IOUserClass</key>
+			<string>RNDISUSBDevice</string>
+			<key>bInterfaceClass</key>
+			<integer>239</integer>
+			<key>bInterfaceSubClass</key>
+			<integer>4</integer>
+			<key>bInterfaceProtocol</key>
+			<integer>1</integer>
+			<key>idVendor</key>
+			<string>*</string>
+			<key>idProduct</key>
+			<string>*</string>
+		</dict>
+
+		<!-- -------------------------------------------------------- -->
+		<!-- Personality 3: Linux Gadget (CDC ACM/Vendor)             -->
+		<!-- 匹配条件：                                                -->
+		<!--   - 设备接口 Class=2: CDC Control                        -->
+		<!--   - 子类 SubClass=2: Abstract Control Model              -->
+		<!--   - 协议 Protocol=255(FFh): Vendor Specific              -->
+		<!-- 设备示例：BeagleBoard, PlutoSDR, 嵌入式 Linux 开发板     -->
+		<!-- -------------------------------------------------------- -->
+		<key>RNDISControlLinuxGadget</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.yourcompany.RNDISDriver</string>
+			<key>IOClass</key>
+			<string>RNDISUSBDevice</string>
+			<key>IOProviderClass</key>
+			<string>IOUSBHostInterface</string>
+			<key>IOUserClass</key>
+			<string>RNDISUSBDevice</string>
+			<key>bInterfaceClass</key>
+			<integer>2</integer>
+			<key>bInterfaceSubClass</key>
+			<integer>2</integer>
+			<key>bInterfaceProtocol</key>
+			<integer>255</integer>
+			<key>idVendor</key>
+			<string>*</string>
+			<key>idProduct</key>
+			<string>*</string>
+		</dict>
+
+		<!-- -------------------------------------------------------- -->
+		<!-- Personality 4: 整设备级匹配（Wireless Controller Device） -->
+		<!-- 匹配条件：                                                -->
+		<!--   - 设备级 Class=224(E0h): Wireless Controller           -->
+		<!--   - 子类 SubClass=0                                      -->
+		<!--   - 协议 Protocol=0                                      -->
+		<!-- 设备示例：Samsung Galaxy S7 Edge（控制接口嵌套较深）     -->
+		<!-- -------------------------------------------------------- -->
+		<key>WirelessControllerDevice</key>
+		<dict>
+			<key>CFBundleIdentifier</key>
+			<string>com.yourcompany.RNDISDriver</string>
+			<key>IOClass</key>
+			<string>RNDISUSBDevice</string>
+			<key>IOProviderClass</key>
+			<string>IOUSBHostDevice</string>
+			<key>IOUserClass</key>
+			<string>RNDISUSBDevice</string>
+			<key>bDeviceClass</key>
+			<integer>224</integer>
+			<key>bDeviceSubClass</key>
+			<integer>0</integer>
+			<key>bDeviceProtocol</key>
+			<integer>0</integer>
+			<key>idVendor</key>
+			<string>*</string>
+			<key>idProduct</key>
+			<string>*</string>
+		</dict>
+	</dict>
+
+	<!-- ============================================================ -->
+	<!-- OSBundleLibraries — DriverKit 框架依赖                        -->
+	<!--                                                              -->
+	<!-- dext 环境下，依赖 DriverKit 内置框架而非内核扩展。            -->
+	<!-- - DriverKit.framework: 基础运行时                            -->
+	<!-- - USBDriverKit.framework: USB 设备访问                      -->
+	<!-- - NetworkDriverKit.framework: 网络接口支持                  -->
+	<!-- ============================================================ -->
+	<key>OSBundleLibraries</key>
+	<dict>
+		<key>com.apple.DriverKit</key>
+		<string>1.0</string>
+		<key>com.apple.USBDriverKit</key>
+		<string>1.0</string>
+		<key>com.apple.NetworkDriverKit</key>
+		<string>1.0</string>
+	</dict>
+
+	<!-- ============================================================ -->
+	<!-- 驱动元数据                                                    -->
+	<!-- ============================================================ -->
+	<key>IOKitPersonalitiesDescription</key>
+	<dict>
+		<key>RNDISDriver</key>
+		<string>RNDIS USB Ethernet Driver</string>
+	</dict>
+
+	<!-- 系统扩展信息 (macOS 11+) -->
+	<key>NSSystemExtensionUsageDescription</key>
+	<string>RNDISDriver provides networking support for USB tethering devices (Android phones and embedded Linux devices).</string>
+
+	<!-- dext 专属键：说明这是一个 DriverKit 扩展 -->
+	<key>OSBundleCompatibleVersion</key>
+	<string>1.0</string>
+</dict>
+</plist>
