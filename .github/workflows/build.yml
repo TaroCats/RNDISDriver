@@ -85,8 +85,7 @@ jobs:
             | head -1 \
             | sed 's/.*= //')
           mkdir -p artifacts-unsigned
-          cp -R "$PRODUCT_DIR/RNDISDriver.dext" artifacts-unsigned/
-          ditto -c -k --keepParent artifacts-unsigned/RNDISDriver.dext artifacts-unsigned/RNDISDriver-unsigned.zip
+          ditto -c -k --keepParent "$PRODUCT_DIR/RNDISDriver.dext" artifacts-unsigned/RNDISDriver-unsigned.zip
 
       - name: Upload unsigned artifact (Release only)
         if: matrix.configuration == 'Release'
@@ -164,11 +163,11 @@ jobs:
             | sed 's/.*= //')
           mkdir -p artifacts
           cp -R "$PRODUCT_DIR/RNDISDriver.dext" artifacts/
-          ditto -c -k --keepParent artifacts/RNDISDriver.dext artifacts/RNDISDriver.dext.zip
+          ditto -c -k --keepParent artifacts/RNDISDriver.dext artifacts/RNDISDriver-signed.zip
 
       - name: Notarize (xcrun notarytool)
         run: |
-          xcrun notarytool submit artifacts/RNDISDriver.dext.zip \
+          xcrun notarytool submit artifacts/RNDISDriver-signed.zip \
             --apple-id "${{ secrets.APPLE_NOTARIZATION_USERNAME }}" \
             --password "${{ secrets.APPLE_NOTARIZATION_PASSWORD }}" \
             --team-id "${{ secrets.APPLE_NOTARIZATION_TEAM_ID }}" \
@@ -178,8 +177,13 @@ jobs:
         run: |
           xcrun stapler staple artifacts/RNDISDriver.dext
 
+      - name: Package signed artifact
+        run: |
+          rm artifacts/RNDISDriver-signed.zip
+          ditto -c -k --keepParent artifacts/RNDISDriver.dext artifacts/RNDISDriver-signed.zip
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: RNDISDriver-signed
-          path: artifacts/
+          path: artifacts/RNDISDriver-signed.zip
