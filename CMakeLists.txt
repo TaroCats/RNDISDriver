@@ -1,0 +1,45 @@
+cmake_minimum_required(VERSION 3.25)
+project(RNDISDriver LANGUAGES CXX)
+
+set(CMAKE_OSX_DEPLOYMENT_TARGET "14.0")
+set(CMAKE_XCODE_ATTRIBUTE_SUPPORTED_PLATFORMS "macosx")
+
+# ── RNDISDriver dext ──
+add_executable(RNDISDriver
+    RNDISDriver/main.cpp
+    RNDISDriver/RNDISUSBDevice.cpp
+    RNDISDriver/RNDISEthernetController.cpp
+    RNDISDriver/RNDISProtocol.h
+    RNDISDriver/RNDISUSBDevice.h
+    RNDISDriver/RNDISEthernetController.h
+)
+
+set_target_properties(RNDISDriver PROPERTIES
+    BUNDLE TRUE
+    BUNDLE_EXTENSION "dext"
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/RNDISDriver/Info.plist"
+    XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.taro.rndisdriver"
+    XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_SOURCE_DIR}/RNDISDriver.entitlements"
+    XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "-"
+    XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual"
+    XCODE_ATTRIBUTE_DRIVERKIT_DEPLOYMENT_TARGET "23.0"
+    XCODE_ATTRIBUTE_GCC_PREFIX_HEADER ""
+)
+
+# ── RNDISApp (host app) ──
+add_executable(RNDISApp
+    RNDISApp/main.swift
+)
+
+set_target_properties(RNDISApp PROPERTIES
+    MACOSX_BUNDLE TRUE
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_SOURCE_DIR}/RNDISApp/Info.plist"
+    XCODE_ATTRIBUTE_PRODUCT_BUNDLE_IDENTIFIER "com.taro.rndisapp"
+    XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "-"
+    XCODE_ATTRIBUTE_CODE_SIGN_STYLE "Manual"
+    XCODE_ATTRIBUTE_EMBEDDED_CONTENT_CONTAINS_SWIFT "YES"
+    XCODE_ATTRIBUTE_ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES "YES"
+)
+
+# App depends on dext (for embedding)
+add_dependencies(RNDISApp RNDISDriver)
