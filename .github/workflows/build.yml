@@ -52,7 +52,20 @@ jobs:
 
       - name: Verify dext binary
         run: |
-          PRODUCT_DIR="build/Build/Products/${{ matrix.configuration }}-${DRIVERKIT_SDK}"
+          PRODUCT_DIR=$(xcodebuild \
+            -project RNDISDriver.xcodeproj \
+            -scheme RNDISDriver \
+            -configuration ${{ matrix.configuration }} \
+            -sdk "$DRIVERKIT_SDK" \
+            -derivedDataPath build \
+            -showBuildSettings 2>/dev/null \
+            | grep " BUILT_PRODUCTS_DIR = " \
+            | head -1 \
+            | sed 's/.*= //')
+          if [ -z "$PRODUCT_DIR" ]; then
+            echo "ERROR: Failed to get build settings"
+            exit 1
+          fi
           echo "=== dext binary info ==="
           file "$PRODUCT_DIR/RNDISDriver.dext/RNDISDriver"
           echo "=== Info.plist ==="
