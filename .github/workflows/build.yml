@@ -25,6 +25,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
       - name: Select Xcode
         run: |
           XCODE_PATH=$(ls -d /Applications/Xcode*.app/Contents/Developer 2>/dev/null | tail -1)
@@ -40,7 +46,7 @@ jobs:
         run: |
           xcodebuild \
             -project RNDISDriver.xcodeproj \
-            -scheme RNDISDriver \
+            -scheme RNDISApp \
             -configuration ${{ matrix.configuration }} \
             -sdk macosx \
             CODE_SIGN_IDENTITY="-" \
@@ -79,6 +85,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
       - name: Select Xcode
         run: |
           XCODE_PATH=$(ls -d /Applications/Xcode*.app/Contents/Developer 2>/dev/null | tail -1)
@@ -95,7 +107,7 @@ jobs:
         run: |
           xcodebuild \
             -project RNDISDriver.xcodeproj \
-            -scheme RNDISDriver \
+            -scheme RNDISApp \
             -configuration Release \
             -sdk macosx \
             CODE_SIGN_IDENTITY="Developer ID Application" \
