@@ -1,0 +1,270 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+
+		59943CF2E82F532E9B57D00A /* main.cpp (Driver) in Sources */ = {isa = PBXBuildFile; fileRef = 3A5963EA974453F8B5B50332 /* main.cpp (Driver) */; };
+
+		801F806219965456A32CA015 /* RNDISProtocol.h in Sources */ = {isa = PBXBuildFile; fileRef = C45C622F27875DA5B49BA0AC /* RNDISProtocol.h */; };
+
+		6EA81C5D1F215272B1E61C3E /* RNDISUSBDevice.h in Sources */ = {isa = PBXBuildFile; fileRef = 0CDF398CAA7D5827971841F2 /* RNDISUSBDevice.h */; };
+
+		A25682B6EF43580FB885F6FF /* RNDISUSBDevice.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4FD9B866040D5A45BF53F3B2 /* RNDISUSBDevice.cpp */; };
+
+		DCD74512B3F455058CE6F41D /* RNDISEthernetController.h in Sources */ = {isa = PBXBuildFile; fileRef = B87FF51797C45E419698E501 /* RNDISEthernetController.h */; };
+
+		4D5284052E1452DA9126F892 /* RNDISEthernetController.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 04A9B3C605A3540CBF940928 /* RNDISEthernetController.cpp */; };
+
+		CF5F1A5EF0FD5C81864780E2 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96FFF59A4C7A5721B54B0683 /* main.swift */; };
+
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+
+		4A6E145CA43853E2969482DA /* PBXContainerItemProxy */ = {isa = PBXContainerItemProxy; containerPortal = BB23BA0C956353E3955F892E; proxyType = 1; remoteGlobalIDString = D22543DD76335C93BB7C14C8; remoteInfo = "RNDISDriver"; };
+
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+
+		3A5963EA974453F8B5B50332 /* main.cpp (Driver) */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "main.cpp (Driver)"; path = "main.cpp"; sourceTree = "<group>"; };
+
+		C45C622F27875DA5B49BA0AC /* RNDISProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "RNDISProtocol.h"; path = "RNDISProtocol.h"; sourceTree = "<group>"; };
+
+		0CDF398CAA7D5827971841F2 /* RNDISUSBDevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "RNDISUSBDevice.h"; path = "RNDISUSBDevice.h"; sourceTree = "<group>"; };
+
+		4FD9B866040D5A45BF53F3B2 /* RNDISUSBDevice.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "RNDISUSBDevice.cpp"; path = "RNDISUSBDevice.cpp"; sourceTree = "<group>"; };
+
+		B87FF51797C45E419698E501 /* RNDISEthernetController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "RNDISEthernetController.h"; path = "RNDISEthernetController.h"; sourceTree = "<group>"; };
+
+		04A9B3C605A3540CBF940928 /* RNDISEthernetController.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = "RNDISEthernetController.cpp"; path = "RNDISEthernetController.cpp"; sourceTree = "<group>"; };
+
+		605053C308C551A1A7AA5D17 /* Info.plist (Driver) */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info.plist (Driver)"; path = "Info.plist"; sourceTree = "<group>"; };
+
+		C19BE1F3F46F5A0BA8F42390 /* RNDISDriver.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = "RNDISDriver.entitlements"; path = "RNDISDriver.entitlements"; sourceTree = "<group>"; };
+
+		96FFF59A4C7A5721B54B0683 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "main.swift"; path = "main.swift"; sourceTree = "<group>"; };
+
+		1170964153115AAB859D509A /* Info.plist (App) */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info.plist (App)"; path = "Info.plist"; sourceTree = "<group>"; };
+
+		CCBFF4ADF3025E4EABD6BF41 /* RNDISDriver.dext */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RNDISDriver.dext; sourceTree = BUILT_PRODUCTS_DIR; };
+
+		6D1E045F44345B5E86574118 /* RNDISApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RNDISApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+
+		25436027270758D6BC508910 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+
+		AD3FE44637F05686B12973E1 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+
+		2DE1D1EF995457AEAC02A5E8 /* RNDISDriver */ = {isa = PBXGroup; children = (
+				3A5963EA974453F8B5B50332 /* 3A5963EA974453F8B5B50332 */,
+				C45C622F27875DA5B49BA0AC /* C45C622F27875DA5B49BA0AC */,
+				0CDF398CAA7D5827971841F2 /* 0CDF398CAA7D5827971841F2 */,
+				4FD9B866040D5A45BF53F3B2 /* 4FD9B866040D5A45BF53F3B2 */,
+				B87FF51797C45E419698E501 /* B87FF51797C45E419698E501 */,
+				04A9B3C605A3540CBF940928 /* 04A9B3C605A3540CBF940928 */,
+				605053C308C551A1A7AA5D17 /* 605053C308C551A1A7AA5D17 */,
+				C19BE1F3F46F5A0BA8F42390 /* C19BE1F3F46F5A0BA8F42390 */,
+			); name = "RNDISDriver"; path = "RNDISDriver"; sourceTree = "<group>"; };
+
+		EBC1A3A4526C5B77B41B1611 /* RNDISApp */ = {isa = PBXGroup; children = (
+				96FFF59A4C7A5721B54B0683 /* 96FFF59A4C7A5721B54B0683 */,
+				1170964153115AAB859D509A /* 1170964153115AAB859D509A */,
+			); name = "RNDISApp"; path = "RNDISApp"; sourceTree = "<group>"; };
+
+		94563E2767985EF891A4755E /* Products */ = {isa = PBXGroup; children = (
+				CCBFF4ADF3025E4EABD6BF41 /* CCBFF4ADF3025E4EABD6BF41 */,
+				6D1E045F44345B5E86574118 /* 6D1E045F44345B5E86574118 */,
+			); name = "Products"; sourceTree = "<group>"; };
+
+		133E9D9D639C54A38D533C2A /*  */ = {isa = PBXGroup; children = (
+				2DE1D1EF995457AEAC02A5E8 /* 2DE1D1EF995457AEAC02A5E8 */,
+				EBC1A3A4526C5B77B41B1611 /* EBC1A3A4526C5B77B41B1611 */,
+				94563E2767985EF891A4755E /* 94563E2767985EF891A4755E */,
+			); name = ""; sourceTree = "<group>"; };
+
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+
+		D22543DD76335C93BB7C14C8 /* RNDISDriver */ = {isa = PBXNativeTarget; buildConfigurationList = E2A85053946655A898389761 /* Build configuration list for PBXNativeTarget "RNDISDriver" */; buildPhases = (
+				40207C97546F5F429082441B,
+				25436027270758D6BC508910,
+			); 
+			name = "RNDISDriver"; productName = "RNDISDriver"; productReference = CCBFF4ADF3025E4EABD6BF41 /* RNDISDriver.dext */; productType = "com.apple.product-type.driverkit-extension"; };
+
+		5E7E8941D5C75A829A695D6A /* RNDISApp */ = {isa = PBXNativeTarget; buildConfigurationList = 4C77F0664D2E5B0A8477D097 /* Build configuration list for PBXNativeTarget "RNDISApp" */; buildPhases = (
+				31451263C4455EB2ADB2CCBD,
+				AD3FE44637F05686B12973E1,
+			); dependencies = (
+				1D0ABCCBEFEF5BC2870D9555,
+			);
+			name = "RNDISApp"; productName = "RNDISApp"; productReference = 6D1E045F44345B5E86574118 /* RNDISApp.app */; productType = "com.apple.product-type.application"; };
+
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+
+		BB23BA0C956353E3955F892E /* Project object */ = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 1600; LastUpgradeCheck = 1600; }; buildConfigurationList = 3434BB4B561C5294BF24EFE9 /* Build configuration list for PBXProject "RNDISDriver" */; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = 133E9D9D639C54A38D533C2A; productRefGroup = 94563E2767985EF891A4755E; projectDirPath = ""; projectRoot = ""; targets = (5E7E8941D5C75A829A695D6A /* RNDISApp */, D22543DD76335C93BB7C14C8 /* RNDISDriver */, ); };
+
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+
+		40207C97546F5F429082441B /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (
+				59943CF2E82F532E9B57D00A,
+				A25682B6EF43580FB885F6FF,
+				4D5284052E1452DA9126F892,
+			); runOnlyForDeploymentPostprocessing = 0; };
+
+		31451263C4455EB2ADB2CCBD /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (
+				CF5F1A5EF0FD5C81864780E2,
+			); runOnlyForDeploymentPostprocessing = 0; };
+
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+
+		1D0ABCCBEFEF5BC2870D9555 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = D22543DD76335C93BB7C14C8; targetProxy = 4A6E145CA43853E2969482DA; };
+
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+
+		8870D4E8FEEB5B64A0A70404 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {
+				"ALWAYS_SEARCH_USER_PATHS" = NO;
+				"CLANG_CXX_LANGUAGE_STANDARD" = "c++17";
+				"CLANG_CXX_LIBRARY" = "libc++";
+				"COPY_PHASE_STRIP" = NO;
+				"DEBUG_INFORMATION_FORMAT" = "dwarf";
+				"ENABLE_STRICT_OBJC_MSGSEND" = YES;
+				"GCC_DYNAMIC_NO_PIC" = NO;
+				"GCC_OPTIMIZATION_LEVEL" = "0";
+				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
+				"ONLY_ACTIVE_ARCH" = YES;
+				"SDKROOT" = "macosx";
+			}; name = "Debug"; };
+
+		4A062ED0AD8F5CABB03AD693 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {
+				"ALWAYS_SEARCH_USER_PATHS" = NO;
+				"CLANG_CXX_LANGUAGE_STANDARD" = "c++17";
+				"CLANG_CXX_LIBRARY" = "libc++";
+				"COPY_PHASE_STRIP" = YES;
+				"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+				"ENABLE_NS_ASSERTIONS" = NO;
+				"GCC_OPTIMIZATION_LEVEL" = "s";
+				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
+				"SDKROOT" = "macosx";
+				"VALIDATE_PRODUCT" = YES;
+			}; name = "Release"; };
+
+		7C5D0990F3675AB781D3BF57 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {
+				"CLANG_CXX_LANGUAGE_STANDARD" = "c++17";
+				"CLANG_CXX_LIBRARY" = "libc++";
+				"CODE_SIGN_ENTITLEMENTS" = "RNDISDriver.entitlements";
+				"CODE_SIGN_IDENTITY" = "-";
+				"CODE_SIGN_STYLE" = "Manual";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf";
+				"DRIVERKIT_DEPLOYMENT_TARGET" = "23.0";
+				"GCC_OPTIMIZATION_LEVEL" = "0";
+				"GCC_PREFIX_HEADER" = "";
+				"GENERATE_INFOPLIST_FILE" = "NO";
+				"INFOPLIST_FILE" = "RNDISDriver/Info.plist";
+				"ONLY_ACTIVE_ARCH" = YES;
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.taro.rndisdriver";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"SDKROOT" = "macosx";
+				"SUPPORTED_PLATFORMS" = "macosx";
+				"SYSTEM_DRIVERKIT_DEPLOYMENT_TARGET" = "23.0";
+			}; name = "Debug"; };
+
+		33A5CE63D2535FA495D5B4EC /* Release */ = {isa = XCBuildConfiguration; buildSettings = {
+				"CLANG_CXX_LANGUAGE_STANDARD" = "c++17";
+				"CLANG_CXX_LIBRARY" = "libc++";
+				"CODE_SIGN_ENTITLEMENTS" = "RNDISDriver.entitlements";
+				"CODE_SIGN_IDENTITY" = "-";
+				"CODE_SIGN_STYLE" = "Manual";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+				"DRIVERKIT_DEPLOYMENT_TARGET" = "23.0";
+				"GCC_OPTIMIZATION_LEVEL" = "s";
+				"GCC_PREFIX_HEADER" = "";
+				"GENERATE_INFOPLIST_FILE" = "NO";
+				"INFOPLIST_FILE" = "RNDISDriver/Info.plist";
+				"ONLY_ACTIVE_ARCH" = NO;
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.taro.rndisdriver";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"SDKROOT" = "macosx";
+				"SUPPORTED_PLATFORMS" = "macosx";
+				"SYSTEM_DRIVERKIT_DEPLOYMENT_TARGET" = "23.0";
+			}; name = "Release"; };
+
+		53343C3A101D502A8594FC3C /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {
+				"CODE_SIGN_IDENTITY" = "-";
+				"CODE_SIGN_STYLE" = "Manual";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf";
+				"GCC_OPTIMIZATION_LEVEL" = "0";
+				"GENERATE_INFOPLIST_FILE" = "NO";
+				"INFOPLIST_FILE" = "RNDISApp/Info.plist";
+				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
+				"ONLY_ACTIVE_ARCH" = YES;
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.taro.rndisapp";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"SDKROOT" = "macosx";
+				"SUPPORTED_PLATFORMS" = "macosx";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-Onone";
+				"SWIFT_VERSION" = "5.0";
+			}; name = "Debug"; };
+
+		DDF8384D8F725DFC8B545CBE /* Release */ = {isa = XCBuildConfiguration; buildSettings = {
+				"CODE_SIGN_IDENTITY" = "-";
+				"CODE_SIGN_STYLE" = "Manual";
+				"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
+				"GCC_OPTIMIZATION_LEVEL" = "s";
+				"GENERATE_INFOPLIST_FILE" = "NO";
+				"INFOPLIST_FILE" = "RNDISApp/Info.plist";
+				"MACOSX_DEPLOYMENT_TARGET" = "14.0";
+				"ONLY_ACTIVE_ARCH" = NO;
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.taro.rndisapp";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"SDKROOT" = "macosx";
+				"SUPPORTED_PLATFORMS" = "macosx";
+				"SWIFT_OPTIMIZATION_LEVEL" = "-O";
+				"SWIFT_VERSION" = "5.0";
+			}; name = "Release"; };
+
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+
+		3434BB4B561C5294BF24EFE9 /* Build configuration list for PBXProject "RNDISDriver" */ = {isa = XCConfigurationList; buildConfigurations = (
+				8870D4E8FEEB5B64A0A70404,
+				4A062ED0AD8F5CABB03AD693,
+			); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+
+		E2A85053946655A898389761 /* Build configuration list for PBXNativeTarget "RNDISDriver" */ = {isa = XCConfigurationList; buildConfigurations = (
+				7C5D0990F3675AB781D3BF57,
+				33A5CE63D2535FA495D5B4EC,
+			); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+
+		4C77F0664D2E5B0A8477D097 /* Build configuration list for PBXNativeTarget "RNDISApp" */ = {isa = XCConfigurationList; buildConfigurations = (
+				53343C3A101D502A8594FC3C,
+				DDF8384D8F725DFC8B545CBE,
+			); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+
+/* End XCConfigurationList section */
+
+	};
+	rootObject = BB23BA0C956353E3955F892E /* Project object */;
+}

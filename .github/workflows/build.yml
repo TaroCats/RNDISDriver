@@ -25,9 +25,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generate Xcode project (cmake)
-        run: cmake -B build_cmake -G Xcode
-
       - name: Select Xcode
         run: |
           XCODE_PATH=$(ls -d /Applications/Xcode*.app/Contents/Developer 2>/dev/null | tail -1)
@@ -42,10 +39,11 @@ jobs:
       - name: Build (${{ matrix.configuration }} / unsigned)
         run: |
           xcodebuild \
-            -project build_cmake/RNDISDriver.xcodeproj \
+            -project RNDISDriver.xcodeproj \
             -scheme RNDISApp \
             -configuration ${{ matrix.configuration }} \
             -sdk macosx \
+            -derivedDataPath build \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
@@ -54,8 +52,8 @@ jobs:
       - name: Verify dext binary
         run: |
           echo "=== dext binary info ==="
-          file build_cmake/${{ matrix.configuration }}/RNDISDriver.dext/Contents/MacOS/RNDISDriver || true
-          ls -la build_cmake/${{ matrix.configuration }}/RNDISDriver.dext/Contents/ || true
+          file build/Build/Products/${{ matrix.configuration }}/RNDISDriver.dext/Contents/MacOS/RNDISDriver || true
+          ls -la build/Build/Products/${{ matrix.configuration }}/RNDISDriver.dext/Contents/ || true
 
   lint:
     name: Lint plist & entitlements
@@ -82,9 +80,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Generate Xcode project (cmake)
-        run: cmake -B build_cmake -G Xcode
-
       - name: Select Xcode
         run: |
           XCODE_PATH=$(ls -d /Applications/Xcode*.app/Contents/Developer 2>/dev/null | tail -1)
@@ -100,10 +95,11 @@ jobs:
       - name: Build (Release / signed)
         run: |
           xcodebuild \
-            -project build_cmake/RNDISDriver.xcodeproj \
+            -project RNDISDriver.xcodeproj \
             -scheme RNDISApp \
             -configuration Release \
             -sdk macosx \
+            -derivedDataPath build \
             CODE_SIGN_IDENTITY="Developer ID Application" \
             OTHER_CODE_SIGN_FLAGS="--timestamp" \
             build
@@ -111,7 +107,7 @@ jobs:
       - name: Archive dext
         run: |
           mkdir -p artifacts
-          cp -R build_cmake/Release/RNDISDriver.dext artifacts/
+          cp -R build/Build/Products/Release/RNDISDriver.dext artifacts/
 
       - name: Notarize
         uses: apple-actions/notarize-macos-artifact@v1
