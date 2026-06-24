@@ -22,6 +22,8 @@
 
 		CF5F1A5EF0FD5C81864780E2 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96FFF59A4C7A5721B54B0683 /* main.swift */; };
 
+		DEADBEEF0000000000000001 /* DriverKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DEADBEEF0000000000000002 /* DriverKit.framework */; };
+
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,11 +58,15 @@
 
 		6D1E045F44345B5E86574118 /* RNDISApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RNDISApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 
+		DEADBEEF0000000000000002 /* DriverKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DriverKit.framework; path = System/Library/Frameworks/DriverKit.framework; sourceTree = SDKROOT; };
+
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 
-		25436027270758D6BC508910 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		25436027270758D6BC508910 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (
+				DEADBEEF0000000000000001,
+			); runOnlyForDeploymentPostprocessing = 0; };
 
 		AD3FE44637F05686B12973E1 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 
@@ -92,8 +98,13 @@
 		133E9D9D639C54A38D533C2A /*  */ = {isa = PBXGroup; children = (
 				2DE1D1EF995457AEAC02A5E8 /* 2DE1D1EF995457AEAC02A5E8 */,
 				EBC1A3A4526C5B77B41B1611 /* EBC1A3A4526C5B77B41B1611 */,
+				BEEFCAFE0000000000000001 /* BEEFCAFE0000000000000001 */,
 				94563E2767985EF891A4755E /* 94563E2767985EF891A4755E */,
 			); name = ""; sourceTree = "<group>"; };
+
+		BEEFCAFE0000000000000001 /* Frameworks */ = {isa = PBXGroup; children = (
+				DEADBEEF0000000000000002 /* DEADBEEF0000000000000002 */,
+			); name = "Frameworks"; sourceTree = "<group>"; };
 
 /* End PBXGroup section */
 
