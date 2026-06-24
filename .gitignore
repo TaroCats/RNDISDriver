@@ -1,4 +1,6 @@
-build/
-DerivedData/
 *.o
 .DS_Store
+build/
+build_local/
+DerivedData/
+

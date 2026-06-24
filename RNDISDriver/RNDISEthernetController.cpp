@@ -221,10 +221,19 @@ IOReturn RNDISEthernetController::createPacketPoolAndQueues(void)
         return ret;
     }
 
-    // 5. 注册以太网接口（NDK_24 签名，带 MAC）
+    // 5. 注册以太网接口
+    // DriverKit 25.0+ 签名：registerEthernetInterface(mac, queues, count, pool, pool)
+    // DriverKit 23.x 签名：registerEthernetInterface(mac, queues, count, pool)
     IOUserNetworkPacketQueue *queues[] = { fTxQueue, fRxQueue };
+#if __has_include(<NetworkingDriverKit/IOUserNetworkRxSubmissionQueue.h>)
+    // DriverKit 25.0+: 5 参数（第二个 pool 用于 RX）
     ret = registerEthernetInterface(
         fMACAddress, queues, 2, fPacketPool, fPacketPool);
+#else
+    // DriverKit 23.x: 4 参数
+    ret = registerEthernetInterface(
+        fMACAddress, queues, 2, fPacketPool);
+#endif
     if (ret != kIOReturnSuccess) {
         os_log(OS_LOG_DEFAULT, "#RNDIS registerEthernetInterface failed: 0x%x", ret);
         return ret;
