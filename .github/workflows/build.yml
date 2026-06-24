@@ -126,18 +126,33 @@ jobs:
             OTHER_CODE_SIGN_FLAGS="--timestamp" \
             build
 
-      - name: Archive dext
+      - name: Archive dext for notarization
         run: |
+          PRODUCT_DIR=$(xcodebuild \
+            -project RNDISDriver.xcodeproj \
+            -scheme RNDISDriver \
+            -configuration Release \
+            -sdk "$DRIVERKIT_SDK" \
+            -derivedDataPath build \
+            -showBuildSettings 2>/dev/null \
+            | grep " BUILT_PRODUCTS_DIR = " \
+            | head -1 \
+            | sed 's/.*= //')
           mkdir -p artifacts
-          cp -R "build/Build/Products/Release-${DRIVERKIT_SDK}/RNDISDriver.dext" artifacts/
+          cp -R "$PRODUCT_DIR/RNDISDriver.dext" artifacts/
+          ditto -c -k --keepParent artifacts/RNDISDriver.dext artifacts/RNDISDriver.dext.zip
 
-      - name: Notarize
-        uses: apple-actions/notarize-macos-artifact@v1
-        with:
-          product-path: artifacts/RNDISDriver.dext
-          apple-id: ${{ secrets.APPLE_NOTARIZATION_USERNAME }}
-          apple-password: ${{ secrets.APPLE_NOTARIZATION_PASSWORD }}
-          team-id: ${{ secrets.APPLE_NOTARIZATION_TEAM_ID }}
+      - name: Notarize (xcrun notarytool)
+        run: |
+          xcrun notarytool submit artifacts/RNDISDriver.dext.zip \
+            --apple-id "${{ secrets.APPLE_NOTARIZATION_USERNAME }}" \
+            --password "${{ secrets.APPLE_NOTARIZATION_PASSWORD }}" \
+            --team-id "${{ secrets.APPLE_NOTARIZATION_TEAM_ID }}" \
+            --wait
+
+      - name: Staple notarization ticket
+        run: |
+          xcrun stapler staple artifacts/RNDISDriver.dext
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
