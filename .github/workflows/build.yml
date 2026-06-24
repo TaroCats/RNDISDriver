@@ -5,6 +5,8 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       enable_release:
@@ -71,10 +73,11 @@ jobs:
           echo "=== Info.plist ==="
           plutil -p "$PRODUCT_DIR/RNDISDriver.dext/Info.plist"
 
-      - name: Package unsigned dext (Release only)
+      - name: Build & package unsigned app (Release only)
         if: matrix.configuration == 'Release'
         run: |
-          PRODUCT_DIR=$(xcodebuild \
+          # Build dext first
+          DEXT_DIR=$(xcodebuild \
             -project RNDISDriver.xcodeproj \
             -scheme RNDISDriver \
             -configuration Release \
@@ -84,14 +87,41 @@ jobs:
             | grep " BUILT_PRODUCTS_DIR = " \
             | head -1 \
             | sed 's/.*= //')
+          
+          # Build host app
+          xcodebuild \
+            -project RNDISDriver.xcodeproj \
+            -scheme RNDISApp \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+          
+          APP_DIR=$(xcodebuild \
+            -project RNDISDriver.xcodeproj \
+            -scheme RNDISApp \
+            -configuration Release \
+            -derivedDataPath build \
+            -showBuildSettings 2>/dev/null \
+            | grep " BUILT_PRODUCTS_DIR = " \
+            | head -1 \
+            | sed 's/.*= //')
+          
+          # Embed dext into app bundle
+          mkdir -p "$APP_DIR/RNDISApp.app/Contents/Library/SystemExtensions"
+          cp -R "$DEXT_DIR/RNDISDriver.dext" "$APP_DIR/RNDISApp.app/Contents/Library/SystemExtensions/"
+          
+          # Package
           mkdir -p artifacts-unsigned
-          ditto -c -k --keepParent "$PRODUCT_DIR/RNDISDriver.dext" artifacts-unsigned/RNDISDriver-unsigned.zip
+          ditto -c -k --keepParent "$APP_DIR/RNDISApp.app" artifacts-unsigned/RNDISApp-unsigned.zip
 
       - name: Upload unsigned artifact (Release only)
         if: matrix.configuration == 'Release'
         uses: actions/upload-artifact@v4
         with:
-          name: RNDISDriver-unsigned
+          name: RNDISApp-unsigned
           path: artifacts-unsigned/
 
   lint:
@@ -187,3 +217,21 @@ jobs:
         with:
           name: RNDISDriver-signed
           path: artifacts/RNDISDriver-signed.zip
+
+  publish-release:
+    name: Publish to GitHub Release
+    runs-on: macos-26
+    if: github.event_name == 'release'
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - name: Download unsigned app
+        uses: actions/download-artifact@v4
+        with:
+          name: RNDISApp-unsigned
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: RNDISApp-unsigned.zip
